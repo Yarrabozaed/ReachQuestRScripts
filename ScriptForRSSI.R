@@ -1,6 +1,17 @@
-library(ggplot2)
+# ONLY RUN THIS IF YOU DONT HAVE THESE PACKAGES INSTALLED
+# install.packages("plotly")
+# install.packages("ggplot2")
+# install.packages("dplyr")
+# install.packages("car")
+# install.packages("babynames")
+# install.packages("gapminder")
+# install.packages("lubridate")
+
+library(plotly)
 library(dplyr)
-library(lubridate)
+library(carData)
+library(gapminder)
+library(babynames)
 
 # Read the data
 data_single <- read.csv("/Users/Yarra/Downloads/rfid_2024-10-09_1-21-41[1].csv")
@@ -33,11 +44,11 @@ data_single <- data_single %>%
 # * geom line will make a line between every two points
 # * labs is just the label for the plot
 # * theme minimal is one of the ways ggplot will format the plot. 
-scatter4 <- ggplot(data_single, aes(x=elapsed_time_ms, y=rssi)) + 
-  geom_point(size=3, color="coral1") + 
-  geom_line(color="blue", lineend="round") +
+scatter_plot <- ggplot(data_single, aes(x=elapsed_time_ms, y=rssi)) + 
+  geom_point(size=3, color="tomato2") + 
+  geom_line(color="royalblue3", lineend="round") +
   labs(x = "Elapsed Time (ms)", y = "RSSI") +
   theme_minimal()
 
 # Display the plot
-scatter4
+scatter_plot
