@@ -14,8 +14,12 @@ library(gapminder)
 library(babynames)
 library(lubridate)
 
+
+# set the name of the file here
+dataset_name_single <- "rfid_2024-10-09_1-21-41[1].csv"
+
 # Read the data
-data_single <- read.csv("/Users/Yarra/Downloads/rfid_2024-10-09_1-21-41[1].csv")
+data_single <- read.csv(paste0("/Users/Yarra/Downloads/", dataset_name_single))
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_single$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_single$timestamp))
@@ -31,7 +35,7 @@ data_single <- data_single %>%
 # Filter out rows where 'count' is greater than 0 (if needed)
 # Assuming there is a 'count' column in the data
 data_single <- data_single %>%
-  filter(count <= 0)
+  filter(is.na(count) | count == 0)
 
 # use this if you want to delete the first row
 # data_single = data_single[-1,]
@@ -48,7 +52,8 @@ data_single <- data_single %>%
 scatter_plot <- ggplot(data_single, aes(x=elapsed_time_ms, y=rssi)) + 
   geom_point(size=3, color="#DC6423") + 
   geom_line(color="#239BDC", lineend="round") +
-  labs(x = "Elapsed Time (ms)", y = "RSSI", title = "Graph of RSSI values over time for one tag") +
+  labs(x = "Elapsed Time (ms)", y = "RSSI", title = "Graph of RSSI values over time for one tag", 
+       subtitle = paste("Dataset:", dataset_name_single)) +
   theme_minimal() 
 
 # Display the plot
@@ -59,8 +64,11 @@ ggplotly(scatter_plot)
 
 #------------------------------------ data_bar_graph & relative frequancy
 
+# set the name of the file here
+dataset_name_bar_graph <- "multitag.csv"
+
 # Read the data
-data_bar_graph <- read.csv("/Users/Yarra/Downloads/multitag.csv")
+data_bar_graph <- read.csv(paste0("/Users/Yarra/Downloads/", dataset_name_bar_graph))
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_bar_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_bar_graph$timestamp))
@@ -76,7 +84,7 @@ data_bar_graph <- data_bar_graph %>%
 # Filter out rows where 'count' is greater than 0 (if needed)
 # Assuming there is a 'count' column in the data
 data_bar_graph <- data_bar_graph %>%
-  filter(count <= 0)
+  filter(is.na(count) | count == 0)
 
 mutated_data <- data_bar_graph %>%
   mutate(time_interval = floor(elapsed_time_ms / 500) * 500) %>%
@@ -87,35 +95,55 @@ mutated_data <- mutated_data %>%
   filter(epc != "")
 
 df_grouped <- mutated_data %>%
-  group_by(time_interval) %>%  # Group by time interval
-  mutate(total_count_per_interval = sum(count_occurances)) %>%  # Total occurrences per time interval
+  group_by(time_interval) %>%  
+  mutate(total_count_per_interval = sum(count_occurances)) %>% 
   ungroup() %>%
   mutate(relative_frequency = count_occurances / total_count_per_interval)
 
 relative_frequancy <- ggplot(df_grouped, aes(x = time_interval, y = relative_frequency, fill = factor(epc))) +
-  geom_bar(stat = "identity", alpha = 0.5, position = 'dodge') +  # Bar plot showing relative frequency
+  geom_bar(stat = "identity", alpha = 0.5, position = 'dodge') + 
   scale_fill_discrete(name = "epc") + 
-  scale_y_continuous(labels = scales::percent) +  # Show y-axis as percentages
-  ylab("Relative Frequency (%)") + 
-  xlab("Elapsed Time Interval (ms)") + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(
+    x = "Elapsed Time Interval (ms)", 
+    y = "Relative Frequency (%)", 
+    title = "Graph of relative reading count frequancy over time", 
+    subtitle = paste("Dataset:", dataset_name_bar_graph)
+  ) +  
   theme_minimal() +
-  scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 500))  # Adjust x-axis intervals
+  scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 500)) 
 
+# this shows the subtitle 
+relative_frequancy
+
+# this won't have subtitle but is interactive
 ggplotly(relative_frequancy)
 
 bar <- ggplot(mutated_data, aes(x = time_interval, y = count_occurances, fill = factor(epc))) +
   geom_bar(stat = "identity", alpha = 0.5, position = 'dodge') +  # Bar plot with side-by-side bars for each EPC
   scale_fill_discrete(name = "epc") + 
-  ylab("Raw Occurrence Count") + 
-  xlab("Elapsed Time Interval (ms)") + 
+  labs(
+    x = "Elapsed Time Interval (ms)", 
+    y = "Raw Occurrence Count", 
+    title = "Graph of reading counts over time for multiple tags", 
+    subtitle = paste("Dataset:", dataset_name_bar_graph)
+  ) + 
   theme_minimal() +
-  scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 500))  # Adjust x-axis intervals
+  scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 500))
 
+# this shows the subtitle 
+bar
+
+# this won't have subtitle but is interactive
 ggplotly(bar)
 
 # ------------------------------------------------------------- multi_line_graph
+
+# set the name of the file here
+dataset_name_multi <- "multitag.csv"
+
 # Read the data
-data_multi <- read.csv("/Users/Yarra/Downloads/multitag.csv")
+data_multi <- read.csv(paste0("/Users/Yarra/Downloads/", dataset_name_multi))
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_multi$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_multi$timestamp))
@@ -129,9 +157,8 @@ data_multi <- data_multi %>%
   mutate(elapsed_time_ms = as.numeric(difftime(timestamp, min(timestamp), units = "secs")) * 1000)
 
 # Filter out rows where 'count' is greater than 0 (if needed)
-# Assuming there is a 'count' column in the data
 data_multi <- data_multi %>%
-  filter(count <= 0)
+  filter(is.na(count) | count == 0)
 
 # use this if you want to delete the first row
 # data_multi = data_multi[-1,]
@@ -140,14 +167,20 @@ data_multi <- data_multi %>%
 # data_multi <- head(data_multi, 24)
 
 # Create the scatter plot with a line connecting the points
-multi_line_graph <- ggplot(data_multi, aes(x=elapsed_time_ms/1000, y=rssi)) + 
+multi_line_graph <- ggplot(data_multi, aes(x=elapsed_time_ms, y=rssi)) + 
   geom_point(aes(colour = factor(epc)), size=3) + 
   geom_line(aes(colour = factor(epc)), lineend="round") +
-  labs(x = "Elapsed Time (ms)", y = "RSSI", title = "Graph of RSSI values over time for one tag") +
+  labs(
+    x = "Elapsed Time (ms)", 
+    y = "RSSI", 
+    title = "Graph of RSSI values over time for multiple tags", 
+    subtitle = paste("Dataset:", dataset_name_multi)
+  ) +
   theme_minimal() 
 
-# Display the plot
+# normal graph with subtitle
 multi_line_graph
 
-# Interactive plot display
+# Convert to interactive plotly graph
 ggplotly(multi_line_graph)
+
