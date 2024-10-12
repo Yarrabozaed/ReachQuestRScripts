@@ -52,8 +52,8 @@ data_single <- data_single %>%
 scatter_plot <- ggplot(data_single, aes(x=elapsed_time_ms, y=rssi)) + 
   geom_point(size=3, color="#DC6423") + 
   geom_line(color="#239BDC", lineend="round") +
-  labs(x = "Elapsed Time (ms)", y = "RSSI", title = "Graph of RSSI values over time for one tag", 
-       subtitle = paste("Dataset:", dataset_name_single)) +
+  labs(x = "Elapsed Time (ms)", y = "RSSI", 
+       title = paste("Graph of RSSI values over time for one tag. Data: ", dataset_name_multi)) +
   theme_minimal() 
 
 # Display the plot
@@ -107,8 +107,7 @@ relative_frequancy <- ggplot(df_grouped, aes(x = time_interval, y = relative_fre
   labs(
     x = "Elapsed Time Interval (ms)", 
     y = "Relative Frequency (%)", 
-    title = "Graph of relative reading count frequancy over time", 
-    subtitle = paste("Dataset:", dataset_name_bar_graph)
+    title = paste("Graph of relative reading count frequancy over time. Data: ", dataset_name_multi)
   ) +  
   theme_minimal() +
   scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 500)) 
@@ -125,9 +124,8 @@ bar <- ggplot(mutated_data, aes(x = time_interval, y = count_occurances, fill = 
   labs(
     x = "Elapsed Time Interval (ms)", 
     y = "Raw Occurrence Count", 
-    title = "Graph of reading counts over time for multiple tags", 
-    subtitle = paste("Dataset:", dataset_name_bar_graph)
-  ) + 
+    title = paste("Graph of reading counts over time for multiple tags. Data: ", dataset_name_multi)
+    ) + 
   theme_minimal() +
   scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 500))
 
@@ -173,9 +171,7 @@ multi_line_graph <- ggplot(data_multi, aes(x=elapsed_time_ms, y=rssi)) +
   labs(
     x = "Elapsed Time (ms)", 
     y = "RSSI", 
-    title = "Graph of RSSI values over time for multiple tags", 
-    subtitle = paste("Dataset:", dataset_name_multi)
-  ) +
+    title = paste("Graph of RSSI values over time for multiple tags. Data: ", dataset_name_multi)) +
   theme_minimal() 
 
 # normal graph with subtitle
@@ -183,4 +179,41 @@ multi_line_graph
 
 # Convert to interactive plotly graph
 ggplotly(multi_line_graph)
+
+
+# ------------------------------------------------------------- multi_line_graph_timestamp_x_axis
+
+# set the name of the file here
+dataset_name_multi <- "multitag.csv"
+
+# Read the data
+data_multi <- read.csv(paste0("/Users/Yarra/Downloads/", dataset_name_multi))
+
+# Filter out rows where 'count' is greater than 0 (if needed)
+data_multi_ts <- data_multi %>%
+  filter(is.na(count) | count == 0)
+
+# use this if you want to delete the first row
+# data_multi = data_multi[-1,]
+
+# use this if you want to only grab the first n rows
+# data_multi <- head(data_multi, 24)
+
+# Create the scatter plot with a line connecting the points
+multi_line_graph_ts <- ggplot(data_multi_ts, aes(x=timestamp, y=rssi)) + 
+  geom_point(aes(colour = factor(epc)), size=3) + 
+  geom_line(aes(colour = factor(epc)), lineend="round") +
+  labs(
+    x = "Elapsed Time (ms)", 
+    y = "RSSI", 
+    title = paste("Graph of RSSI values over time for multiple tags. Data: ", dataset_name_multi)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# normal graph with subtitle
+multi_line_graph_ts
+
+# Convert to interactive plotly graph
+ggplotly(multi_line_graph_ts)
+
 
