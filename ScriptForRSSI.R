@@ -16,10 +16,18 @@ library(lubridate)
 
 
 # set the name of the file here
-dataset_name_single <- "rfid_2024-10-09_1-21-41[1].csv"
+dataset_name_single <- "5.3-rfid_2024-10-11_3-46-54.csv"
+
+dataset_name_bar_graph <- dataset_name_single
+
+dataset_name_multi <- dataset_name_single
+
+dataset_name_multi_timestamp <- dataset_name_single
+
+dataset_rolling_avg <- dataset_name_single
 
 # Read the data
-data_single <- read.csv(paste0("/Users/Yarra/Downloads/", dataset_name_single))
+data_single <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_single))
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_single$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_single$timestamp))
@@ -54,10 +62,22 @@ scatter_plot <- ggplot(data_single, aes(x=elapsed_time_ms, y=rssi)) +
   geom_line(color="#239BDC", lineend="round") +
   labs(x = "Elapsed Time (ms)", y = "RSSI", 
        title = paste("Graph of RSSI values over time for one tag. Data: ", dataset_name_multi)) +
-  theme_minimal() 
+  theme_minimal() + 
+  theme(
+    panel.background = element_rect(fill = "white", color = NA),  # White background
+    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
+  )
 
 # Display the plot
 scatter_plot
+
+ggsave(
+  filename = "rssi_over_time_for_one_tag.png",  
+  plot = scatter_plot,                        
+  width = 10,                           
+  height = 7,
+  dpi = 300 
+)
 
 # Interactive plot display
 ggplotly(scatter_plot)
@@ -65,10 +85,10 @@ ggplotly(scatter_plot)
 #------------------------------------ data_bar_graph & relative frequancy
 
 # set the name of the file here
-dataset_name_bar_graph <- "multitag.csv"
+# dataset_name_bar_graph <- "multitag.csv"
 
 # Read the data
-data_bar_graph <- read.csv(paste0("/Users/Yarra/Downloads/", dataset_name_bar_graph))
+data_bar_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_bar_graph))
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_bar_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_bar_graph$timestamp))
@@ -110,10 +130,22 @@ relative_frequancy <- ggplot(df_grouped, aes(x = time_interval, y = relative_fre
     title = paste("Graph of relative reading count frequancy over time. Data: ", dataset_name_multi)
   ) +  
   theme_minimal() +
-  scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 500)) 
+  scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 500)) + 
+  theme(
+    panel.background = element_rect(fill = "white", color = NA),  # White background
+    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
+  )
 
 # this shows the subtitle 
 relative_frequancy
+
+ggsave(
+  filename = "relative_frequancy_bar_graph.png",  
+  plot = relative_frequancy,                        
+  width = 10,                           
+  height = 7,
+  dpi = 300 
+)
 
 # this won't have subtitle but is interactive
 ggplotly(relative_frequancy)
@@ -127,10 +159,23 @@ bar <- ggplot(mutated_data, aes(x = time_interval, y = count_occurances, fill = 
     title = paste("Graph of reading counts over time for multiple tags. Data: ", dataset_name_multi)
     ) + 
   theme_minimal() +
-  scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 500))
+  scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 500)) + 
+  theme(
+    panel.background = element_rect(fill = "white", color = NA),  # White background
+    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
+  )
 
 # this shows the subtitle 
 bar
+
+ggsave(
+  filename = "occurance_count_bar_graph.png",  
+  plot = bar,                        
+  width = 10,                           
+  height = 7,
+  dpi = 300 
+)
+
 
 # this won't have subtitle but is interactive
 ggplotly(bar)
@@ -138,10 +183,10 @@ ggplotly(bar)
 # ------------------------------------------------------------- multi_line_graph
 
 # set the name of the file here
-dataset_name_multi <- "multitag.csv"
+# dataset_name_multi <- "multitag.csv"
 
 # Read the data
-data_multi <- read.csv(paste0("/Users/Yarra/Downloads/", dataset_name_multi))
+data_multi <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_multi))
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_multi$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_multi$timestamp))
@@ -172,10 +217,23 @@ multi_line_graph <- ggplot(data_multi, aes(x=elapsed_time_ms, y=rssi)) +
     x = "Elapsed Time (ms)", 
     y = "RSSI", 
     title = paste("Graph of RSSI values over time for multiple tags. Data: ", dataset_name_multi)) +
-  theme_minimal() 
+  theme_minimal()  + 
+  theme(
+    panel.background = element_rect(fill = "white", color = NA),  # White background
+    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
+  )
 
 # normal graph with subtitle
 multi_line_graph
+
+ggsave(
+  filename = "line_graph_RSSI_over_time_for_all_tags.png",  
+  plot = multi_line_graph,                        
+  width = 10,                           
+  height = 7,
+  dpi = 300 
+)
+
 
 # Convert to interactive plotly graph
 ggplotly(multi_line_graph)
@@ -183,11 +241,12 @@ ggplotly(multi_line_graph)
 
 # ------------------------------------------------------------- multi_line_graph_timestamp_x_axis
 
+
 # set the name of the file here
-dataset_name_multi <- "multitag.csv"
+# dataset_name_multi <- "multitag.csv"
 
 # Read the data
-data_multi <- read.csv(paste0("/Users/Yarra/Downloads/", dataset_name_multi))
+data_multi <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_multi_timestamp))
 
 # Filter out rows where 'count' is greater than 0 (if needed)
 data_multi_ts <- data_multi %>%
@@ -199,21 +258,80 @@ data_multi_ts <- data_multi %>%
 # use this if you want to only grab the first n rows
 # data_multi <- head(data_multi, 24)
 
-# Create the scatter plot with a line connecting the points
-multi_line_graph_ts <- ggplot(data_multi_ts, aes(x=timestamp, y=rssi)) + 
-  geom_point(aes(colour = factor(epc)), size=3) + 
+# Plot the data, using scale_x_datetime and proper formatting for milliseconds
+multi_line_graph_ts <- ggplot(data_multi_ts, aes(x=timestamp, y=rssi)) +
+  geom_point(aes(colour = factor(epc)), size=3) +
   geom_line(aes(colour = factor(epc)), lineend="round") +
   labs(
-    x = "Elapsed Time (ms)", 
-    y = "RSSI", 
-    title = paste("Graph of RSSI values over time for multiple tags. Data: ", dataset_name_multi)) +
+    x = "Timestamp",
+    y = "RSSI",
+    title = paste("Graph of RSSI values over time for multiple tags with timestamps. Data: ", dataset_name_multi)) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(
+    panel.background = element_rect(fill = "white", color = NA),  # White background
+    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
+  )
+
+# Display the plot
+print(multi_line_graph_ts)
 
 # normal graph with subtitle
 multi_line_graph_ts
 
+ggsave(
+  filename = "timestamp_by_RSSI_for_all_tags.png",
+  plot = multi_line_graph_ts,
+  width = 10,
+  height = 7,
+  dpi = 300
+)
+
 # Convert to interactive plotly graph
 ggplotly(multi_line_graph_ts)
+# 
 
+# ------------------------------------------------------------- rolling averages plot
 
+library(zoo)
+
+dataset_rolling_avg <- "12.1-rfid_2024-10-22_0-02-33.csv"
+
+# Read the data
+data_rolling_avg_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_rolling_avg))
+
+# Extract milliseconds from the timestamp and convert to numeric
+data_rolling_avg_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_rolling_avg_graph$timestamp))
+
+# Parse the timestamp including milliseconds
+data_rolling_avg_graph$timestamp <- ymd_hms(sub("\\.\\d+", "", data_rolling_avg_graph$timestamp), tz = "UTC") + 
+  milliseconds(data_rolling_avg_graph$milliseconds)
+
+# Calculate elapsed time in milliseconds from the first timestamp
+data_rolling_avg_graph <- data_rolling_avg_graph %>%
+  mutate(elapsed_time_ms = as.numeric(difftime(timestamp, min(timestamp), units = "secs")) * 1000)
+
+# Filter out rows where 'count' is greater than 0 (if needed)
+data_rolling_avg_graph <- data_rolling_avg_graph %>%
+  filter(is.na(count) | count == 0)
+
+data <- data_rolling_avg_graph
+
+# Ensure that the RSSI and elapsed_time_ms columns are numeric
+data$rssi <- as.numeric(data$rssi)
+data$elapsed_time_ms <- as.numeric(data$elapsed_time_ms)
+
+# Calculate rolling average for each EPC group
+data <- data %>%
+  group_by(epc) %>%
+  arrange(elapsed_time_ms) %>%
+  mutate(rolling_rssi = rollmean(rssi, k = 20, fill = NA)) # You can change 'k' for a different window size
+
+# Plot RSSI rolling average over elapsed time per EPC
+ggplot(data, aes(x = elapsed_time_ms, y = rolling_rssi, color = epc)) +
+  geom_line() +
+  labs(title = paste("Rolling Average of RSSI Over Time by EPC. Data: ", dataset_rolling_avg),
+       x = "Elapsed Time (ms)",
+       y = "RSSI (Rolling Average)") +
+  scale_x_continuous(breaks = seq(0, max(data$elapsed_time_ms, na.rm = TRUE), by = 500)) + # Increase x-axis ticks
+  scale_y_continuous(breaks = seq(min(data$rssi, na.rm = TRUE), max(data$rssi, na.rm = TRUE), by = 5)) + # Increase y-axis ticks
+  theme_minimal()
