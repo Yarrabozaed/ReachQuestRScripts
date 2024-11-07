@@ -18,7 +18,9 @@ library(lubridate)
 
 
 # set the name of the file here
-dataset_name_single <- "12.4-rfid_2024-10-22_0-04-10.csv"
+dataset_name <- "/Users/Yarra/Downloads/exp2/Experiment3/3.1-rfid_2024-11-07_2-20-00.csv"
+
+dataset_name_single <- "3.1-rfid_2024-11-07_2-20-00.csv"
 
 dataset_name_bar_graph <- dataset_name_single
 
@@ -29,8 +31,9 @@ dataset_name_multi_timestamp <- dataset_name_single
 dataset_rolling_avg <- dataset_name_single
 
 # Read the data
-data_single <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_single))
-
+# data_single <- read.csv(paste0("/Users/Yarra/Downloads/exp2/Experiment1/", dataset_name_single))
+data_single <- read.csv(dataset_name)
+  
 # Extract milliseconds from the timestamp and convert to numeric
 data_single$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_single$timestamp))
 
@@ -45,7 +48,7 @@ data_single <- data_single %>%
 # Filter out rows where 'count' is greater than 0 (if needed)
 # Assuming there is a 'count' column in the data
 data_single <- data_single %>%
-  filter(is.na(count) | count == 0)
+  dplyr::filter(is.na(count) | count == 0)
 
 # use this if you want to delete the first row
 # data_single = data_single[-1,]
@@ -90,9 +93,8 @@ ggplotly(scatter_plot)
 # dataset_name_bar_graph <- "multitag.csv"
 
 # Read the data
-data_bar_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_bar_graph))
-
-zzzzz <- data_bar_graph
+# data_bar_graph <- read.csv(paste0("/Users/Yarra/Downloads/exp2/Experiment1/", dataset_name_bar_graph))
+data_bar_graph <- read.csv(dataset_name)
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_bar_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_bar_graph$timestamp))
@@ -108,15 +110,15 @@ data_bar_graph <- data_bar_graph %>%
 # Filter out rows where 'count' is greater than 0 (if needed)
 # Assuming there is a 'count' column in the data
 data_bar_graph <- data_bar_graph %>%
-  filter(is.na(count) | count == 0)
+  dplyr::filter(is.na(count) | count == 0)
 
 mutated_data <- data_bar_graph %>%
-  mutate(time_interval = floor(elapsed_time_ms / 100) * 100) %>%
+  mutate(time_interval = floor(elapsed_time_ms / 500) * 500) %>%
   group_by(epc, time_interval) %>%
   summarise(count_occurances = n(), .groups = 'drop')
 
 mutated_data <- mutated_data %>%
-  filter(epc != "")
+  dplyr::filter(epc != "")
 
 df_grouped <- mutated_data %>%
   group_by(time_interval) %>%  
@@ -134,7 +136,7 @@ relative_frequancy <- ggplot(df_grouped, aes(x = time_interval, y = relative_fre
     title = paste("Graph of relative reading count frequancy over time. Data: ", dataset_name_multi)
   ) +  
   theme_minimal() +
-  scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 100)) + 
+  scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 500)) + 
   theme(
     panel.background = element_rect(fill = "white", color = NA),  # White background
     plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
@@ -163,7 +165,7 @@ bar <- ggplot(mutated_data, aes(x = time_interval, y = count_occurances, fill = 
     title = paste("Graph of reading counts over time for multiple tags. Data: ", dataset_name_multi)
   ) + 
   theme_minimal() +
-  scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 100)) + 
+  scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 500)) + 
   theme(
     panel.background = element_rect(fill = "white", color = NA),  # White background
     plot.background = element_rect(fill = "lightgray", color = NA),  # Light gray background for the entire plot
@@ -191,7 +193,8 @@ ggplotly(bar)
 # dataset_name_multi <- "multitag.csv"
 
 # Read the data
-data_multi <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_multi))
+# data_multi <- read.csv(paste0("/Users/Yarra/Downloads/exp2/Experiment3/", dataset_name_multi))
+data_multi <- read.csv(dataset_name)
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_multi$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_multi$timestamp))
@@ -206,7 +209,7 @@ data_multi <- data_multi %>%
 
 # Filter out rows where 'count' is greater than 0 (if needed)
 data_multi <- data_multi %>%
-  filter(is.na(count) | count == 0)
+  dplyr::filter(is.na(count) | count == 0)
 
 # use this if you want to delete the first row
 # data_multi = data_multi[-1,]
@@ -215,7 +218,7 @@ data_multi <- data_multi %>%
 # data_multi <- head(data_multi, 24)
 
 # Create the scatter plot with a line connecting the points
-multi_line_graph <- ggplot(data_multi, aes(x=elapsed_time_ms, y=rssi)) + 
+multi_line_graph <- ggplot(data_multi, aes(x=elapsed_time_ms/100, y=rssi)) + 
   geom_point(aes(colour = factor(epc)), size=3) + 
   geom_line(aes(colour = factor(epc)), lineend="round") +
   labs(
@@ -251,11 +254,11 @@ ggplotly(multi_line_graph)
 # dataset_name_multi <- "multitag.csv"
 
 # Read the data
-data_multi <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_multi_timestamp))
+data_multi <- read.csv(dataset_name)
 
 # Filter out rows where 'count' is greater than 0 (if needed)
 data_multi_ts <- data_multi %>%
-  filter(is.na(count) | count == 0)
+  dplyr::filter(is.na(count) | count == 0)
 
 # use this if you want to delete the first row
 # data_multi = data_multi[-1,]
@@ -264,18 +267,20 @@ data_multi_ts <- data_multi %>%
 # data_multi <- head(data_multi, 24)
 
 # Plot the data, using scale_x_datetime and proper formatting for milliseconds
-multi_line_graph_ts <- ggplot(data_multi_ts, aes(x=timestamp, y=rssi)) +
-  geom_point(aes(colour = factor(epc)), size=3) +
-  geom_line(aes(colour = factor(epc)), lineend="round") +
+multi_line_graph_ts <- ggplot(data_multi_ts, aes(x = timestamp, y = rssi, group = epc)) +
+  geom_point(aes(colour = factor(epc)), size = 3) +
+  geom_line(aes(colour = factor(epc)), lineend = "round") +
   labs(
     x = "Timestamp",
     y = "RSSI",
-    title = paste("Graph of RSSI values over time for multiple tags with timestamps. Data: ", dataset_name_multi)) +
+    title = paste("Graph of RSSI values over time for multiple tags with timestamps. Data: ", dataset_name_multi)
+  ) +
   theme_minimal() +
   theme(
-    panel.background = element_rect(fill = "white", color = NA),  # White background
-    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "lightgray", color = NA)
   )
+
 
 # Display the plot
 print(multi_line_graph_ts)
@@ -299,10 +304,11 @@ ggplotly(multi_line_graph_ts)
 
 library(zoo)
 
-dataset_rolling_avg <- "12.5-rfid_2024-10-22_0-04-38.csv"
+dataset_rolling_avg <- dataset_name_single
 
 # Read the data
-data_rolling_avg_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_rolling_avg))
+# data_rolling_avg_graph <- read.csv(paste0("/Users/Yarra/Downloads/exp2/Experiment1/", dataset_rolling_avg))
+data_rolling_avg_graph <- read.csv(dataset_name)
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_rolling_avg_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_rolling_avg_graph$timestamp))
@@ -317,7 +323,7 @@ data_rolling_avg_graph <- data_rolling_avg_graph %>%
 
 # Filter out rows where 'count' is greater than 0 (if needed)
 data_rolling_avg_graph <- data_rolling_avg_graph %>%
-  filter(is.na(count) | count == 0)
+  dplyr::filter(is.na(count) | count == 0)
 
 data <- data_rolling_avg_graph
 
@@ -343,34 +349,42 @@ graph_RA <- ggplot(data, aes(x = elapsed_time_ms, y = rolling_rssi, color = epc)
 
 ggplotly(graph_RA)
 
+ggsave(
+  filename = "rolling_average_plot.png",  
+  plot = graph_RA,                        
+  width = 10,                           
+  height = 7,
+  dpi = 300 
+)
+
 # ------------------------------------------------------------- savitzky
 
 library(signal)
 
 # Define the dataset file path
-dataset_rolling_avg <- "12.5-rfid_2024-10-22_0-04-38.csv"
+savitzky_title <- dataset_name_single
 
 # Read the data
-data_rolling_avg_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_rolling_avg))
+data_savitzky <- read.csv(dataset_name)
 
 # Extract milliseconds from the timestamp and convert to numeric
-data_rolling_avg_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_rolling_avg_graph$timestamp))
+data_savitzky$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_savitzky$timestamp))
 
 # Parse the timestamp including milliseconds
-data_rolling_avg_graph$timestamp <- ymd_hms(sub("\\.\\d+", "", data_rolling_avg_graph$timestamp), tz = "UTC") + 
-  milliseconds(data_rolling_avg_graph$milliseconds)
+data_savitzky$timestamp <- ymd_hms(sub("\\.\\d+", "", data_savitzky$timestamp), tz = "UTC") + 
+  milliseconds(data_savitzky$milliseconds)
 
 # Calculate elapsed time in milliseconds from the first timestamp
-data_rolling_avg_graph <- data_rolling_avg_graph %>%
+data_savitzky <- data_savitzky %>%
   mutate(elapsed_time_ms = as.numeric(difftime(timestamp, min(timestamp), units = "secs")) * 1000)
 
 # Filter out rows where 'count' is greater than 0 (if needed)
-data_rolling_avg_graph <- data_rolling_avg_graph %>%
-  filter(is.na(count) | count == 0)
+data_savitzky <- data_savitzky %>%
+  dplyr::filter(is.na(count) | count == 0)
 
 # Ensure that the RSSI and elapsed_time_ms columns are numeric
-data_rolling_avg_graph$rssi <- as.numeric(data_rolling_avg_graph$rssi)
-data_rolling_avg_graph$elapsed_time_ms <- as.numeric(data_rolling_avg_graph$elapsed_time_ms)
+data_savitzky$rssi <- as.numeric(data_savitzky$rssi)
+data_savitzky$elapsed_time_ms <- as.numeric(data_savitzky$elapsed_time_ms)
 
 # Parameters for the Savitzky-Golay filter
 window_size <- 5  # Use an odd window size for compatibility with the filter
@@ -386,7 +400,7 @@ apply_savgol_filter <- function(rssi_values) {
 }
 
 # Group by EPC and apply the Savitzky-Golay filter
-data_smoothed <- data_rolling_avg_graph %>%
+data_smoothed <- data_savitzky %>%
   group_by(epc) %>%
   arrange(elapsed_time_ms) %>%
   mutate(smoothed_rssi = apply_savgol_filter(rssi))
@@ -394,7 +408,7 @@ data_smoothed <- data_rolling_avg_graph %>%
 # Plot the smoothed RSSI over elapsed time for each EPC
 graph_savgol <- ggplot(data_smoothed, aes(x = elapsed_time_ms, y = smoothed_rssi, color = epc)) +
   geom_line() +
-  labs(title = paste("Savitzky-Golay Smoothed RSSI Over Time by EPC. Data: ", dataset_rolling_avg),
+  labs(title = paste("Savitzky-Golay Smoothed RSSI Over Time by EPC. Data: ", savitzky_title),
        x = "Elapsed Time (ms)",
        y = "RSSI (Smoothed)") +
   scale_x_continuous(breaks = seq(0, max(data_smoothed$elapsed_time_ms, na.rm = TRUE), by = 500)) + # Increase x-axis ticks
@@ -407,29 +421,29 @@ ggplotly(graph_savgol)
 # ------------------------------------------------------------- EMA
 
 # Define the dataset file path
-dataset_rolling_avg <- "12.4-rfid_2024-10-22_0-04-10.csv"
+ema_title <- dataset_name_single
 
 # Read the data
-data_rolling_avg_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_rolling_avg))
+data_ema <- read.csv(dataset_name)
 
 # Extract milliseconds from the timestamp and convert to numeric
-data_rolling_avg_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_rolling_avg_graph$timestamp))
+data_ema$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_ema$timestamp))
 
 # Parse the timestamp including milliseconds
-data_rolling_avg_graph$timestamp <- ymd_hms(sub("\\.\\d+", "", data_rolling_avg_graph$timestamp), tz = "UTC") + 
-  milliseconds(data_rolling_avg_graph$milliseconds)
+data_ema$timestamp <- ymd_hms(sub("\\.\\d+", "", data_ema$timestamp), tz = "UTC") + 
+  milliseconds(data_ema$milliseconds)
 
 # Calculate elapsed time in milliseconds from the first timestamp
-data_rolling_avg_graph <- data_rolling_avg_graph %>%
+data_ema <- data_ema %>%
   mutate(elapsed_time_ms = as.numeric(difftime(timestamp, min(timestamp), units = "secs")) * 1000)
 
 # Filter out rows where 'count' is greater than 0 (if needed)
-data_rolling_avg_graph <- data_rolling_avg_graph %>%
-  filter(is.na(count) | count == 0)
+data_ema <- data_ema %>%
+  dplyr::filter(is.na(count) | count == 0)
 
 # Ensure that the RSSI and elapsed_time_ms columns are numeric
-data_rolling_avg_graph$rssi <- as.numeric(data_rolling_avg_graph$rssi)
-data_rolling_avg_graph$elapsed_time_ms <- as.numeric(data_rolling_avg_graph$elapsed_time_ms)
+data_ema$rssi <- as.numeric(data_ema$rssi)
+data_ema$elapsed_time_ms <- as.numeric(data_ema$elapsed_time_ms)
 
 # Define the smoothing function for Exponential Moving Average (EMA)
 apply_ema_filter <- function(rssi_values, alpha = 0.1) {
@@ -448,7 +462,7 @@ apply_ema_filter <- function(rssi_values, alpha = 0.1) {
 alpha <- 0.1  # Adjust this value (0 < alpha < 1) to control the smoothing effect
 
 # Group by EPC and apply the EMA filter
-data_smoothed <- data_rolling_avg_graph %>%
+data_smoothed <- data_ema %>%
   group_by(epc) %>%
   arrange(elapsed_time_ms) %>%
   mutate(smoothed_rssi = apply_ema_filter(rssi, alpha))
@@ -456,7 +470,7 @@ data_smoothed <- data_rolling_avg_graph %>%
 # Plot the EMA-smoothed RSSI over elapsed time for each EPC
 graph_ema <- ggplot(data_smoothed, aes(x = elapsed_time_ms, y = smoothed_rssi, color = epc)) +
   geom_line() +
-  labs(title = paste("Exponential Moving Average Smoothed RSSI Over Time by EPC. Data: ", dataset_rolling_avg),
+  labs(title = paste("Exponential Moving Average Smoothed RSSI Over Time by EPC. Data: ", ema_title),
        x = "Elapsed Time (ms)",
        y = "RSSI (Smoothed with EMA)") +
   scale_x_continuous(breaks = seq(0, max(data_smoothed$elapsed_time_ms, na.rm = TRUE), by = 500)) + # Increase x-axis ticks
@@ -465,3 +479,11 @@ graph_ema <- ggplot(data_smoothed, aes(x = elapsed_time_ms, y = smoothed_rssi, c
 
 # Convert to interactive plot
 ggplotly(graph_ema)
+
+ggsave(
+  filename = "ema_plot.png",  
+  plot = graph_ema,                        
+  width = 10,                           
+  height = 7,
+  dpi = 300 
+)
