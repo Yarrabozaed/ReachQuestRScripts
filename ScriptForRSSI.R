@@ -6,6 +6,8 @@
 # install.packages("babynames")
 # install.packages("gapminder")
 # install.packages("lubridate")
+# install.packages("signal")
+# install.packages("zoo")
 
 library(plotly)
 library(dplyr)
@@ -16,7 +18,7 @@ library(lubridate)
 
 
 # set the name of the file here
-dataset_name_single <- "5.3-rfid_2024-10-11_3-46-54.csv"
+dataset_name_single <- "12.4-rfid_2024-10-22_0-04-10.csv"
 
 dataset_name_bar_graph <- dataset_name_single
 
@@ -71,13 +73,13 @@ scatter_plot <- ggplot(data_single, aes(x=elapsed_time_ms, y=rssi)) +
 # Display the plot
 scatter_plot
 
-ggsave(
-  filename = "rssi_over_time_for_one_tag.png",  
-  plot = scatter_plot,                        
-  width = 10,                           
-  height = 7,
-  dpi = 300 
-)
+# ggsave(
+#  filename = "rssi_over_time_for_one_tag.png",  
+#  plot = scatter_plot,                        
+#  width = 10,                           
+#  height = 7,
+#  dpi = 300 
+#)
 
 # Interactive plot display
 ggplotly(scatter_plot)
@@ -89,6 +91,8 @@ ggplotly(scatter_plot)
 
 # Read the data
 data_bar_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_name_bar_graph))
+
+zzzzz <- data_bar_graph
 
 # Extract milliseconds from the timestamp and convert to numeric
 data_bar_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_bar_graph$timestamp))
@@ -107,7 +111,7 @@ data_bar_graph <- data_bar_graph %>%
   filter(is.na(count) | count == 0)
 
 mutated_data <- data_bar_graph %>%
-  mutate(time_interval = floor(elapsed_time_ms / 500) * 500) %>%
+  mutate(time_interval = floor(elapsed_time_ms / 100) * 100) %>%
   group_by(epc, time_interval) %>%
   summarise(count_occurances = n(), .groups = 'drop')
 
@@ -130,7 +134,7 @@ relative_frequancy <- ggplot(df_grouped, aes(x = time_interval, y = relative_fre
     title = paste("Graph of relative reading count frequancy over time. Data: ", dataset_name_multi)
   ) +  
   theme_minimal() +
-  scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 500)) + 
+  scale_x_continuous(breaks = seq(min(df_grouped$time_interval), max(df_grouped$time_interval), by = 100)) + 
   theme(
     panel.background = element_rect(fill = "white", color = NA),  # White background
     plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
@@ -157,16 +161,17 @@ bar <- ggplot(mutated_data, aes(x = time_interval, y = count_occurances, fill = 
     x = "Elapsed Time Interval (ms)", 
     y = "Raw Occurrence Count", 
     title = paste("Graph of reading counts over time for multiple tags. Data: ", dataset_name_multi)
-    ) + 
+  ) + 
   theme_minimal() +
-  scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 500)) + 
+  scale_x_continuous(breaks = seq(min(mutated_data$time_interval), max(mutated_data$time_interval), by = 100)) + 
   theme(
     panel.background = element_rect(fill = "white", color = NA),  # White background
-    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
-  )
+    plot.background = element_rect(fill = "lightgray", color = NA),  # Light gray background for the entire plot
+    axis.text.x = element_text(angle = 90, vjust = 0.5)  # Make x-axis labels vertical
+  ) 
 
-# this shows the subtitle 
 bar
+
 
 ggsave(
   filename = "occurance_count_bar_graph.png",  
@@ -288,13 +293,13 @@ ggsave(
 
 # Convert to interactive plotly graph
 ggplotly(multi_line_graph_ts)
-# 
+
 
 # ------------------------------------------------------------- rolling averages plot
 
 library(zoo)
 
-dataset_rolling_avg <- "12.1-rfid_2024-10-22_0-02-33.csv"
+dataset_rolling_avg <- "12.5-rfid_2024-10-22_0-04-38.csv"
 
 # Read the data
 data_rolling_avg_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_rolling_avg))
@@ -324,10 +329,10 @@ data$elapsed_time_ms <- as.numeric(data$elapsed_time_ms)
 data <- data %>%
   group_by(epc) %>%
   arrange(elapsed_time_ms) %>%
-  mutate(rolling_rssi = rollmean(rssi, k = 20, fill = NA)) # You can change 'k' for a different window size
+  mutate(rolling_rssi = rollmean(rssi, k = 4, fill = NA)) # You can change 'k' for a different window size
 
 # Plot RSSI rolling average over elapsed time per EPC
-ggplot(data, aes(x = elapsed_time_ms, y = rolling_rssi, color = epc)) +
+graph_RA <- ggplot(data, aes(x = elapsed_time_ms, y = rolling_rssi, color = epc)) +
   geom_line() +
   labs(title = paste("Rolling Average of RSSI Over Time by EPC. Data: ", dataset_rolling_avg),
        x = "Elapsed Time (ms)",
@@ -335,3 +340,128 @@ ggplot(data, aes(x = elapsed_time_ms, y = rolling_rssi, color = epc)) +
   scale_x_continuous(breaks = seq(0, max(data$elapsed_time_ms, na.rm = TRUE), by = 500)) + # Increase x-axis ticks
   scale_y_continuous(breaks = seq(min(data$rssi, na.rm = TRUE), max(data$rssi, na.rm = TRUE), by = 5)) + # Increase y-axis ticks
   theme_minimal()
+
+ggplotly(graph_RA)
+
+# ------------------------------------------------------------- savitzky
+
+library(signal)
+
+# Define the dataset file path
+dataset_rolling_avg <- "12.5-rfid_2024-10-22_0-04-38.csv"
+
+# Read the data
+data_rolling_avg_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_rolling_avg))
+
+# Extract milliseconds from the timestamp and convert to numeric
+data_rolling_avg_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_rolling_avg_graph$timestamp))
+
+# Parse the timestamp including milliseconds
+data_rolling_avg_graph$timestamp <- ymd_hms(sub("\\.\\d+", "", data_rolling_avg_graph$timestamp), tz = "UTC") + 
+  milliseconds(data_rolling_avg_graph$milliseconds)
+
+# Calculate elapsed time in milliseconds from the first timestamp
+data_rolling_avg_graph <- data_rolling_avg_graph %>%
+  mutate(elapsed_time_ms = as.numeric(difftime(timestamp, min(timestamp), units = "secs")) * 1000)
+
+# Filter out rows where 'count' is greater than 0 (if needed)
+data_rolling_avg_graph <- data_rolling_avg_graph %>%
+  filter(is.na(count) | count == 0)
+
+# Ensure that the RSSI and elapsed_time_ms columns are numeric
+data_rolling_avg_graph$rssi <- as.numeric(data_rolling_avg_graph$rssi)
+data_rolling_avg_graph$elapsed_time_ms <- as.numeric(data_rolling_avg_graph$elapsed_time_ms)
+
+# Parameters for the Savitzky-Golay filter
+window_size <- 5  # Use an odd window size for compatibility with the filter
+poly_order <- 2   # Polynomial order for Savitzky-Golay
+
+# Create a function to apply the Savitzky-Golay filter
+apply_savgol_filter <- function(rssi_values) {
+  if (length(rssi_values) < window_size) {
+    return(rep(NA, length(rssi_values)))
+  }
+  sg_filter <- sgolayfilt(rssi_values, p = poly_order, n = window_size)
+  return(sg_filter)
+}
+
+# Group by EPC and apply the Savitzky-Golay filter
+data_smoothed <- data_rolling_avg_graph %>%
+  group_by(epc) %>%
+  arrange(elapsed_time_ms) %>%
+  mutate(smoothed_rssi = apply_savgol_filter(rssi))
+
+# Plot the smoothed RSSI over elapsed time for each EPC
+graph_savgol <- ggplot(data_smoothed, aes(x = elapsed_time_ms, y = smoothed_rssi, color = epc)) +
+  geom_line() +
+  labs(title = paste("Savitzky-Golay Smoothed RSSI Over Time by EPC. Data: ", dataset_rolling_avg),
+       x = "Elapsed Time (ms)",
+       y = "RSSI (Smoothed)") +
+  scale_x_continuous(breaks = seq(0, max(data_smoothed$elapsed_time_ms, na.rm = TRUE), by = 500)) + # Increase x-axis ticks
+  scale_y_continuous(breaks = seq(min(data_smoothed$rssi, na.rm = TRUE), max(data_smoothed$rssi, na.rm = TRUE), by = 5)) + # Increase y-axis ticks
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(graph_savgol)
+
+# ------------------------------------------------------------- EMA
+
+# Define the dataset file path
+dataset_rolling_avg <- "12.4-rfid_2024-10-22_0-04-10.csv"
+
+# Read the data
+data_rolling_avg_graph <- read.csv(paste0("/Users/Yarra/Downloads/experiment_data/", dataset_rolling_avg))
+
+# Extract milliseconds from the timestamp and convert to numeric
+data_rolling_avg_graph$milliseconds <- as.numeric(sub(".*\\.(\\d+)", "\\1", data_rolling_avg_graph$timestamp))
+
+# Parse the timestamp including milliseconds
+data_rolling_avg_graph$timestamp <- ymd_hms(sub("\\.\\d+", "", data_rolling_avg_graph$timestamp), tz = "UTC") + 
+  milliseconds(data_rolling_avg_graph$milliseconds)
+
+# Calculate elapsed time in milliseconds from the first timestamp
+data_rolling_avg_graph <- data_rolling_avg_graph %>%
+  mutate(elapsed_time_ms = as.numeric(difftime(timestamp, min(timestamp), units = "secs")) * 1000)
+
+# Filter out rows where 'count' is greater than 0 (if needed)
+data_rolling_avg_graph <- data_rolling_avg_graph %>%
+  filter(is.na(count) | count == 0)
+
+# Ensure that the RSSI and elapsed_time_ms columns are numeric
+data_rolling_avg_graph$rssi <- as.numeric(data_rolling_avg_graph$rssi)
+data_rolling_avg_graph$elapsed_time_ms <- as.numeric(data_rolling_avg_graph$elapsed_time_ms)
+
+# Define the smoothing function for Exponential Moving Average (EMA)
+apply_ema_filter <- function(rssi_values, alpha = 0.1) {
+  if (length(rssi_values) < 2) {
+    return(rep(NA, length(rssi_values)))
+  }
+  ema <- rep(NA, length(rssi_values))
+  ema[1] <- rssi_values[1]
+  for (i in 2:length(rssi_values)) {
+    ema[i] <- alpha * rssi_values[i] + (1 - alpha) * ema[i - 1]
+  }
+  return(ema)
+}
+
+# Define the smoothing factor alpha
+alpha <- 0.1  # Adjust this value (0 < alpha < 1) to control the smoothing effect
+
+# Group by EPC and apply the EMA filter
+data_smoothed <- data_rolling_avg_graph %>%
+  group_by(epc) %>%
+  arrange(elapsed_time_ms) %>%
+  mutate(smoothed_rssi = apply_ema_filter(rssi, alpha))
+
+# Plot the EMA-smoothed RSSI over elapsed time for each EPC
+graph_ema <- ggplot(data_smoothed, aes(x = elapsed_time_ms, y = smoothed_rssi, color = epc)) +
+  geom_line() +
+  labs(title = paste("Exponential Moving Average Smoothed RSSI Over Time by EPC. Data: ", dataset_rolling_avg),
+       x = "Elapsed Time (ms)",
+       y = "RSSI (Smoothed with EMA)") +
+  scale_x_continuous(breaks = seq(0, max(data_smoothed$elapsed_time_ms, na.rm = TRUE), by = 500)) + # Increase x-axis ticks
+  scale_y_continuous(breaks = seq(min(data_smoothed$rssi, na.rm = TRUE), max(data_smoothed$rssi, na.rm = TRUE), by = 5)) + # Increase y-axis ticks
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(graph_ema)
