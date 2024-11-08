@@ -345,7 +345,11 @@ graph_RA <- ggplot(data, aes(x = elapsed_time_ms, y = rolling_rssi, color = epc)
        y = "RSSI (Rolling Average)") +
   scale_x_continuous(breaks = seq(0, max(data$elapsed_time_ms, na.rm = TRUE), by = 500)) + # Increase x-axis ticks
   scale_y_continuous(breaks = seq(min(data$rssi, na.rm = TRUE), max(data$rssi, na.rm = TRUE), by = 5)) + # Increase y-axis ticks
-  theme_minimal()
+  theme_minimal() + 
+  theme(
+    panel.background = element_rect(fill = "white", color = NA),  # White background
+    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
+  )
 
 ggplotly(graph_RA)
 
@@ -475,7 +479,11 @@ graph_ema <- ggplot(data_smoothed, aes(x = elapsed_time_ms, y = smoothed_rssi, c
        y = "RSSI (Smoothed with EMA)") +
   scale_x_continuous(breaks = seq(0, max(data_smoothed$elapsed_time_ms, na.rm = TRUE), by = 500)) + # Increase x-axis ticks
   scale_y_continuous(breaks = seq(min(data_smoothed$rssi, na.rm = TRUE), max(data_smoothed$rssi, na.rm = TRUE), by = 5)) + # Increase y-axis ticks
-  theme_minimal()
+  theme_minimal() + 
+  theme(
+    panel.background = element_rect(fill = "white", color = NA),  # White background
+    plot.background = element_rect(fill = "lightgray", color = NA)  # Light gray background for the entire plot
+  )
 
 # Convert to interactive plot
 ggplotly(graph_ema)
